@@ -4,11 +4,13 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import { Col, Row } from "react-bootstrap";
 
-function GameMenuModal({gameOptions, setGameOptions}) {
+function GameMenuModal({gameOptions, setGameOptions, shuffleAndSetDeckAmount}) {
   const [show, setShow] = useState(true);
   
 
-  const handleClose = () => {setShow(() => false)};
+  const handleClose = () => {
+    shuffleAndSetDeckAmount();
+    setShow(() => false)};
 
   const handleFormSelectChange=(e)=>setGameOptions({...gameOptions, [`${e.target.name}`]: Number(e.target.value)})
 
@@ -29,8 +31,8 @@ function GameMenuModal({gameOptions, setGameOptions}) {
               </Form.Select>
             </Col>
             <Col>
-              <Form.Label>Hands</Form.Label>
-              <Form.Select size="sm" name="hands" onChange={handleFormSelectChange}>
+              <Form.Label>Players</Form.Label>
+              <Form.Select size="sm" name="players" onChange={handleFormSelectChange}>
               {Array.from({ length: 5 }).map((_, idx) => (
                   <option key={idx} >{idx+1}</option>
                 ))}

@@ -1,12 +1,12 @@
 import { useSpring, animated } from "@react-spring/web";
 import "./cards.css";
 
-function PlayingCard({cardPostitions}) {
+function PlayingCard({playerLocation}) {
 
 
   const springs = useSpring({
     from: { x: 0, y: 0, zIndex: 2 },
-    to: { x: cardPostitions.x, y: cardPostitions.y, zIndex: 2 },
+    to: { x: playerLocation.x, y: playerLocation.y, zIndex: 2 },
   });
 
   return (

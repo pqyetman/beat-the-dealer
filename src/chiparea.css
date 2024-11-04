@@ -1,0 +1,20 @@
+.circular-area {
+    width: 6vh ; /* Set the width of the circle */
+    height: 6vh; /* Set the height of the circle */
+    border-radius: 50%; /* Make it circular */
+    background-color: lightgreen; /* Background color */
+    position: relative; /* Allow positioning of chips inside */
+    border: 2px solid rgb(234, 242, 234); /* Border color */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chip {
+    width: 3vh ; /* Width of the chip */
+    height: 3vh;; /* Height of the chip */
+    background-color: red; /* Chip color */
+    color: rgb(250, 250, 250); /* Text color */
+    text-align: center;
+    border-radius: 50% ;; /* Make it circular */
+}
