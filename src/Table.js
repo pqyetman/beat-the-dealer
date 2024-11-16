@@ -1,88 +1,56 @@
 import PlayingCard from "./PlayingCard";
+import PlayerArea from "./PlayerArea";
 import Deck from "./Deck";
 import { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Button } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import GameMenuModal from "./GameMenuModal";
 import ChipArea from "./ChipArea";
 import WagerAmountArea from "./WagerAmountArea";
+import { setPlayerCoordinates, shuffleAndSetDeckAmount } from "./CardFunctions";
+import GameOptionsButtonArea from "./GameOptionsButtonArea";
 
 function Table() {
   const [gameOptions, setGameOptions] = useState({
-    numberOfDecks: 1,
-    players: 1,
+    decks: 0,
+    players: 0,
   });
-  const { numberOfDecks, players } = gameOptions;
-  const [deck, setDeck] = useState([]);
-  const [playerLocations, setPlayerLocations] = useState([]);
-  const [playerCards, setPlayerCards] = useState([]);
+  const { decks, players } = gameOptions;
+  const [playerDetails, setPlayerDetails] = useState([]);
 
-  function shuffleAndSetDeckAmount() {
-    const deckOfCards = [];
-    const ranks = [
-      { cardValue: "a" },
-      { cardValue: "k" },
-      { cardValue: "q" },
-      { cardValue: "j" },
-      { cardValue: "9" },
-      { cardValue: "8" },
-      { cardValue: "7" },
-      { cardValue: "6" },
-      { cardValue: "5" },
-      { cardValue: "4" },
-      { cardValue: "3" },
-      { cardValue: "2" },
-      { cardValue: "1" },
-    ];
+  useEffect(() => {
+    const newDeck = shuffleAndSetDeckAmount(decks);
+    
+    const newLocations = setPlayerCoordinates(players);
+    localStorage.setItem("deck", JSON.stringify(newDeck));
+   
+    setPlayerDetails(() => newLocations);
+  }, [decks, players]);
 
-    const suits = ["clubs", "spades", "diamonds", "hearts"];
+  useEffect(() => {
+    if (
+      playerDetails.length > 1 &&
+      playerDetails.every((player) => player.actionState === "playing")
+    ) {
+      playerDetails.forEach((player) => {
+        if (player.hand.length < 2) {
+          const nextCard = JSON.parse(localStorage.getItem("deck")).at(-1);
 
-    for (let i = 0; i < numberOfDecks; i++) {
-      suits.forEach((suit) => {
-        ranks.forEach((rank) => {
-          deckOfCards.push({ cardValue: rank.cardValue + " " + suit });
-        });
-      });
-    }
-    //multiply the deck
-
-    //shuffle the deck
-
-    function shuffleArray(array) {
-      for (var i = array.length - 1; i >= 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-      }
-    }
-
-    shuffleArray(deckOfCards);
-    //set the deck to state
-    setDeck(() => deckOfCards);
-  }
-
-  function dealHand() {
-    const playerCoordinates = [];
-    const dealerArea = document.getElementById("dealer-area");
-    const dealerAreaRect = dealerArea.getBoundingClientRect();
-    playerCoordinates.push({
-      id: "dealer-area",
-      x: dealerAreaRect.x,
-      y: dealerAreaRect.y,
-    });
-
-    for (let i = 1; i <= players; i++) {
-      const playerArea = document.getElementById(`player-area-${i}`);
-      const playerAreaRect = playerArea.getBoundingClientRect();
-      playerCoordinates.push({
-        id: `player-area-${i}`,
-        x: playerAreaRect.x,
-        y: playerAreaRect.y,
+          setPlayerDetails((prevPlayerDetails) =>
+            prevPlayerDetails.map((detail) =>
+              detail.id === player.id
+                ? { ...detail, hand: [...detail.hand, nextCard] }
+                : detail
+            )
+          );
+          const oldDeck = JSON.parse(localStorage.getItem("deck"));
+          const newDeck = oldDeck.slice(0, oldDeck.length - 1);
+          localStorage.setItem("deck", JSON.stringify(newDeck));
+        }
       });
     }
 
-    setPlayerLocations(() => playerCoordinates);
-  }
+  
+  }, [playerDetails]);
 
   return (
     <>
@@ -90,65 +58,56 @@ function Table() {
         <GameMenuModal
           gameOptions={gameOptions}
           setGameOptions={setGameOptions}
-          shuffleAndSetDeckAmount={shuffleAndSetDeckAmount}
         />
 
-        <Deck deck={deck} numberOfDecks={numberOfDecks} />
+        {  decks > 0 ? <Deck decks={decks} /> : null}
 
-        {playerLocations[0] &&
-          playerLocations.map((playerLocation, idx) => (
-            <PlayingCard key={idx} playerLocation={playerLocation} />
-          ))}
+      {playerDetails.length>=1 && 
+       playerDetails.filter(player => player.actionState ==="playing" && player.hand && player.hand.length >=1).map(player =>
+
+        player.hand.map((hand,idx)=><PlayingCard key={player + hand + idx} idx={idx} hand={hand} playerLocation={player}/>)
+
+       )
+      }
       </Row>
       <Container fluid className="blackjack-table px-3">
         {/* Dealer Area */}
-        <Row className="justify-content-center">
-          <Col md={5} xs={8}>
-            <Card id="dealer-area" className="text-center dealer-cards">
-              <Card.Body>
-                <Card.Text>Dealer's Cards</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+        {playerDetails[0] &&
+            playerDetails
+              .filter((player) => player.id === "dealer-area")
+              .map((player, idx) => (
+
+                  <PlayerArea idx={idx} id={player.id} player={player} setPlayerDetails={setPlayerDetails}/>
+                ))}
 
         {/* Player Areas */}
         <Row xs={10} className="justify-content-around ">
-          {Array.from({ length: players }).map((_, idx) => (
-            <Col key={idx} xs={2} >
-              <Row className="justify-content-center">
-              <Card
-                style={{ width: "12vw" }}
-                className="player-spot text-center"
-                id={"player-area-" + (idx + 1)}
-              >
-                <Card.Body>
-                  <Card.Text>Player {idx + 1}</Card.Text>
-                </Card.Body>
-              </Card>
-              </Row>
-              <div className="d-flex justify-content-center" >
-              <ChipArea />
-              </div>
-              <div className="d-flex justify-content-center mt-2" >
-              <WagerAmountArea/>
-              </div>
-            </Col>
-          ))}
-        </Row>
+          {playerDetails[0] &&
+            playerDetails
+              .filter((player) => player.id !== "dealer-area")
+              .map((player, idx) => (
+                <Col key={idx} xs={2}>
+                  <PlayerArea idx={idx} id={player.id} player={player} setPlayerDetails={setPlayerDetails}/>
+                  <div className="d-flex justify-content-center mt-3">
+                    <ChipArea amount={player.amount} />
+                  </div>
 
-        {/* Betting Area */}
-        <Row className="justify-content-around betting-area">
-          <Col lg={1} xs={3} className="text-center">
-            <Button variant="warning" size="lg" className="bet-button">
-              HIT
-            </Button>
-          </Col>
-          <Col lg={1} md={2} xs={3} className="text-center">
-            <Button variant="warning" size="lg" className="bet-button">
-              STAY
-            </Button>
-          </Col>
+                  <div className="d-flex justify-content-center mt-3">
+                    <WagerAmountArea
+                      amount={player.amount}
+                      id={player.id}
+                      actionState={player.actionState}
+                      setPlayerDetails={setPlayerDetails}
+                    />
+                  </div>
+                  <div className="d-flex justify-content-center mt-3">
+                    <GameOptionsButtonArea
+                      id={player.id}
+                      setPlayerDetails={setPlayerDetails}
+                    />
+                  </div>
+                </Col>
+              ))}
         </Row>
       </Container>
     </>

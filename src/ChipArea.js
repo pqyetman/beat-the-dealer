@@ -1,14 +1,13 @@
-import { Card } from 'react-bootstrap';
 import './chiparea.css'; 
 
-const ChipArea = () => {
+const ChipArea = ({amount}) => {
     return (
         <div className="circular-area mt-3">
-            <div className="chip" style={{ position: 'absolute' }}>
-                <p>10</p>
+            <div className="chip">
+                <p>{amount}</p>
             </div>          
         </div>
-    );
+    )
 };
 
 export default ChipArea;

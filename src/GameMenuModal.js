@@ -4,12 +4,12 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import { Col, Row } from "react-bootstrap";
 
-function GameMenuModal({gameOptions, setGameOptions, shuffleAndSetDeckAmount}) {
+function GameMenuModal({gameOptions, setGameOptions}) {
   const [show, setShow] = useState(true);
   
 
   const handleClose = () => {
-    shuffleAndSetDeckAmount();
+  
     setShow(() => false)};
 
   const handleFormSelectChange=(e)=>setGameOptions({...gameOptions, [`${e.target.name}`]: Number(e.target.value)})
